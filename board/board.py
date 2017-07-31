@@ -1,6 +1,6 @@
 import itertools
 
-from parameters import BLACK, WHITE
+from parameters import BLACK, WHITE, TOP_COLOR
 from pieces import (
     InvalidMove,
     Bishop,
@@ -50,28 +50,42 @@ class Board(object):
             for y in range(8):
                 self._board[x].append(None)
 
-        self._pieces = []
+        self._pieces = {
+            BLACK: [],
+            WHITE: [],
+        }
         self._playing_color = None
         self.init()
+
+    def add_piece(self, piece):
+        self._board[piece.x][piece.y] = piece
+        self._pieces[piece.color].append(piece)
 
     def init(self):
         self._playing_color = WHITE
         for color in [BLACK, WHITE]:
             for pawn_n in range(8):
-                x = 1 if color is BLACK else 6
+                x = 1 if color is TOP_COLOR else 6
                 y = pawn_n
                 pawn = Pawn(x, y, color)
                 self.add_piece(pawn)
 
-            lign = 0 if color is BLACK else 7
+            lign = 0 if color is TOP_COLOR else 7
             self.add_piece(Bishop(lign, 2, color))
             self.add_piece(Bishop(lign, 5, color))
             self.add_piece(Knight(lign, 1, color))
             self.add_piece(Knight(lign, 6, color))
             self.add_piece(Rook(lign, 0, color))
             self.add_piece(Rook(lign, 7, color))
-            self.add_piece(Queen(lign, 3, color))
-            self.add_piece(King(lign, 4, color))
+            if TOP_COLOR is BLACK:
+                self.add_piece(Queen(lign, 3, color))
+                self.add_piece(King(lign, 4, color))
+            else:
+                self.add_piece(King(lign, 3, color))
+                self.add_piece(Queen(lign, 4, color))
+
+    # ----------------------------------------------------------------------- #
+    # Properties
 
     @property
     def player(self):
@@ -81,20 +95,8 @@ class Board(object):
             return "White"
         return None
 
-    def add_piece(self, piece):
-        self._board[piece.x][piece.y] = piece
-        self._pieces.append(piece)
-
-    def display(self):
-        board = BOARD_FORMAT
-        for x, y in CELLS:
-            piece = self._board[x][y]
-            r = " - " if (x + y) % 2 else "   "
-            board = board.replace(
-                "%s %s" % (x, y),
-                repr(piece) if piece else r
-            )
-        print(board)
+    # ----------------------------------------------------------------------- #
+    # Playing
 
     def move(self, pos, npos):
         pos = Vector(*pos)
@@ -134,8 +136,26 @@ class Board(object):
 
     def _move(self, x, y, nx, ny, piece):
         self._board[x][y] = None
-        if self._board[nx][ny]:
-            self._board[nx][ny].kill()
+        npiece = self._board[nx][ny]
+        if npiece:
+            npiece.kill()
         piece.pos = (nx, ny)
         self._board[nx][ny] = piece
         self._playing_color = BLACK if self._playing_color is WHITE else WHITE
+
+    # ----------------------------------------------------------------------- #
+    # Display
+
+    def display(self):
+        board = BOARD_FORMAT
+        for x, y in CELLS:
+            piece = self._board[x][y]
+            r = " - " if (x + y) % 2 else "   "
+            board = board.replace(
+                "%s %s" % (x, y),
+                repr(piece) if piece else r
+            )
+        print(
+
+        )
+        print(board)

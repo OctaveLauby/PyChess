@@ -1,4 +1,4 @@
-from parameters import BLACK, WHITE
+from parameters import BLACK, WHITE, TOP_COLOR
 from utils.vector import Vector
 
 
@@ -12,7 +12,7 @@ class Piece(object):
         self._alife = True
         self._color = color
         self._direction = (
-            Vector(1, 1) if self._color is BLACK else Vector(-1, 1)
+            Vector(1, 1) if self._color is TOP_COLOR else Vector(-1, 1)
         )
         self._pos = Vector(x, y)
 
@@ -52,6 +52,12 @@ class Piece(object):
         """Go not next position."""
         self._pos = Vector(npos[0], npos[1])
 
+    def color_name(self):
+        if self.color is BLACK:
+            return "black"
+        elif self.color is WHITE:
+            return "white"
+
     def kill(self):
         self._alife = False
 
@@ -60,8 +66,8 @@ class Piece(object):
             if move == move_tuple:
                 return move
         raise InvalidMove(
-            "%s can't do %s move."
-            % (self.__class__.__name__, move_tuple)
+            "%s %s can't do %s move."
+            % (self.color_name(), self.__class__.__name__, move_tuple)
         )
 
     def symbol(self):
