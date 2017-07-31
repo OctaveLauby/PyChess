@@ -131,8 +131,8 @@ class Board(object):
         # Make sure you don't bumb into someone when moving:
         int_pos = pos.copy()
         for step in range(move.steps-1):
-            int_pos += move
-            ix, iy = int_pos
+            int_pos = int_pos + move
+            ix, iy = int_pos.x, int_pos.y
             if self._board[ix][iy]:
                 raise InvalidMove("Bump into someone at (%s, %s)" % (ix, iy))
         # Check future
