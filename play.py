@@ -37,26 +37,42 @@ def read_input(message):
     return pos, npos
 
 
+def play_move(move, board, f):
+    pos, npos = read_input(move)
+    f.write(move+"\n")
+    board.move(pos, npos)
+
+
 if __name__ == '__main__':
     print("++++ WELCOME TO CHESS ++++")
     print("\nHow to play:")
     print("\t- Specifiy your move such as 'a2 a4'")
 
+    f = open("history.txt", "w+")
+
     board = Board()
-    board.display()
+
+    old_start = [
+        "a2 a4",
+        "b7 b5",
+        "a4 b5",
+    ]
+    for move in old_start:
+        play_move(move, board, f)
 
     cont = True
     while cont:
+        board.display()
         try:
             print("\n%s is playing:" % board.player)
-            message = input("\tMove:")
-            if message in ["q", "quit", "s", "stop"]:
+            move = input("\tMove:")
+            if move in ["q", "quit", "s", "stop"]:
                 raise GameOver
-            pos, npos = read_input(message)
-            board.move(pos, npos)
-            board.display()
+            play_move(move, board, f)
         except InvalidMove as e:
             print("/!\ InvalidMove :", e)
         except GameOver:
             cont = False
             pass
+
+    f.close()

@@ -40,6 +40,19 @@ BOARD_FORMAT = (
 CELLS = list(itertools.product(range(8), range(8)))
 
 
+class PList(list):
+
+    def string(self):
+        return (
+            "["
+            + " ".join([
+                "-" if piece.alife else piece.symbol()
+                for piece in self
+            ])
+            + "]"
+        )
+
+
 class Board(object):
 
     def __init__(self):
@@ -51,8 +64,8 @@ class Board(object):
                 self._board[x].append(None)
 
         self._pieces = {
-            BLACK: [],
-            WHITE: [],
+            BLACK: PList([]),
+            WHITE: PList([]),
         }
         self._playing_color = None
         self.init()
@@ -146,7 +159,7 @@ class Board(object):
     # ----------------------------------------------------------------------- #
     # Display
 
-    def display(self):
+    def board_str(self):
         board = BOARD_FORMAT
         for x, y in CELLS:
             piece = self._board[x][y]
@@ -155,7 +168,17 @@ class Board(object):
                 "%s %s" % (x, y),
                 repr(piece) if piece else r
             )
-        print(
+        return board
 
-        )
-        print(board)
+    def display(self):
+        if TOP_COLOR is BLACK:
+            top_color = "Black"
+            bottom_color = "White"
+        else:
+            top_color = "White"
+            bottom_color = "Black"
+
+        print()
+        print(top_color, ":", self._pieces[TOP_COLOR].string())
+        print(self.board_str())
+        print(bottom_color, ":", self._pieces[1 - TOP_COLOR].string())

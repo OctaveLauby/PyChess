@@ -32,3 +32,11 @@ class Vector(list):
 
     def __eq__(self, other):
         return (self.x, self.y) == (other[0], other[1])
+
+
+if __name__ == "__main__":
+    v1 = Vector(1, 1)
+    v2 = Vector(0, 1)
+    assert v1 + v2 == [1, 2]
+    assert v1 * 5 == [5, 5]
+    assert v1 * v2 == [0, 1]
