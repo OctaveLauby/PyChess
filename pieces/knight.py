@@ -1,5 +1,5 @@
 from .piece import Piece
-from gameplay.move import Move
+from gameplay.moves import Move
 
 
 class Knight(Piece):
@@ -7,14 +7,14 @@ class Knight(Piece):
     def init_moves(self):
         self._can_cross = True
         self._moves = [
-            Move((+2, +1)),
-            Move((+2, -1)),
-            Move((-2, +1)),
-            Move((-2, -1)),
-            Move((+1, +2)),
-            Move((+1, -2)),
-            Move((-1, +2)),
-            Move((-1, -2)),
+            Move(self, (+2, +1)),
+            Move(self, (+2, -1)),
+            Move(self, (-2, +1)),
+            Move(self, (-2, -1)),
+            Move(self, (+1, +2)),
+            Move(self, (+1, -2)),
+            Move(self, (-1, +2)),
+            Move(self, (-1, -2)),
         ]
 
     def symbol(self):

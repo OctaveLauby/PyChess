@@ -130,30 +130,9 @@ class Board(object):
         elif piece.color is not self._playing_color:
             raise InvalidMove("You must move piece of your color")
 
-        # Check future
-        # ---- boundaries
-        if npos.x < 0 or npos.x > 7 or npos.y < 0 or npos.y > 7:
-            raise InvalidMove("Moving piece out of boundaries")
-
-        # ---- Move is possible
+        # Check whether move is possible
         move = piece.get_move(npos - pos)
-
-        # ---- Squares along the path
-        int_pos = pos.copy()
-        for step in range(move.steps-1):
-            int_pos = int_pos + move
-            if self.get(int_pos):
-                raise InvalidMove("Bump into someone at %s" % int_pos)
-
-        # ---- Destination
-        npiece = self.get(npos)
-        if npiece:
-            if npiece.color is self._playing_color:
-                raise InvalidMove("Moving on a piece of your own")
-            elif not move.can_kill:
-                raise InvalidMove("Can't take a piece with this move")
-        elif move.must_kill:
-            raise InvalidMove("This move is valid only if it kills a piece")
+        move.check(self)
 
         self._move(pos, npos, piece)
 

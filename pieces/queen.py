@@ -1,7 +1,7 @@
 import itertools
 
 from .piece import Piece
-from gameplay.move import Move
+from gameplay.moves import Move
 
 
 class Queen(Piece):
@@ -12,7 +12,7 @@ class Queen(Piece):
             if dpos == (0, 0):
                 continue
             for scal in range(1, 8):
-                self._moves.append(Move(dpos, steps=scal))
+                self._moves.append(Move(self, dpos, steps=scal))
 
     def symbol(self):
         return "Q"

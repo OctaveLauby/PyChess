@@ -1,7 +1,7 @@
 import itertools
 
 from .piece import Piece
-from gameplay.move import Move
+from gameplay.moves import Move
 
 
 class King(Piece):
@@ -11,7 +11,7 @@ class King(Piece):
         for dpos in itertools.product([-1, 0, 1], [-1, 0, 1]):
             if dpos == (0, 0):
                 continue
-            self._moves.append(Move(dpos))
+            self._moves.append(Move(self, dpos))
 
     def symbol(self):
         return "K"

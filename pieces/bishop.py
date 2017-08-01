@@ -1,5 +1,5 @@
 from .piece import Piece
-from gameplay.move import Move
+from gameplay.moves import Move
 
 
 class Bishop(Piece):
@@ -8,7 +8,7 @@ class Bishop(Piece):
         self._moves = []
         for dpos in [(+1, +1), (+1, -1), (-1, +1), (-1, -1)]:
             for scal in range(1, 8):
-                self._moves.append(Move(dpos, steps=scal))
+                self._moves.append(Move(self, dpos, steps=scal))
 
     def symbol(self):
         return "B"

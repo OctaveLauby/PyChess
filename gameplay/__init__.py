@@ -1,2 +1,2 @@
 from .errors import InvalidMove
-from .move import Move
+from .moves import Move
