@@ -1,5 +1,5 @@
-from .piece import InvalidMove, Piece
-from .move import Move
+from .piece import Piece
+from gameplay import InvalidMove, Move
 from utils import Vector
 
 

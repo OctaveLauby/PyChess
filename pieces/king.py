@@ -1,7 +1,7 @@
 import itertools
 
 from .piece import Piece
-from .move import Move
+from gameplay.move import Move
 
 
 class King(Piece):

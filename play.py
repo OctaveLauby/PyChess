@@ -1,4 +1,5 @@
-from board.board import Board, InvalidMove
+from gameplay import InvalidMove
+from board import Board
 
 
 class GameOver(Exception):
@@ -56,6 +57,13 @@ if __name__ == '__main__':
         "a2 a4",
         "b7 b5",
         "a4 b5",
+        "c7 c6",
+        "b5 c6",
+        "b8 c6",
+        "b1 c3",
+        "d8 a5",
+        "g1 f3",
+        "a5 c3",
     ]
     for move in old_start:
         play_move(move, board, f)

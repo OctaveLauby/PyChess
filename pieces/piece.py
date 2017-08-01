@@ -1,9 +1,6 @@
+from gameplay import InvalidMove
 from parameters import BLACK, WHITE, TOP_COLOR
 from utils import Position, Vector
-
-
-class InvalidMove(Exception):
-    pass
 
 
 class Piece(object):
@@ -46,15 +43,18 @@ class Piece(object):
         return self.pos.y
 
     def is_alife(self):
+        """Whether piece is still active."""
         return self._alife
 
     def color_name(self):
+        """Color name of piece."""
         if self.color is BLACK:
             return "black"
         elif self.color is WHITE:
             return "white"
 
     def get_move(self, move_tuple):
+        """Return move if exists, raise InvalidMove if not."""
         for move in self._moves:
             if move == move_tuple:
                 return move

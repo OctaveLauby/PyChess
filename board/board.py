@@ -1,6 +1,6 @@
+from gameplay import InvalidMove
 from parameters import BLACK, WHITE, TOP_COLOR
 from pieces import (
-    InvalidMove,
     Bishop,
     Queen,
     King,
@@ -123,24 +123,29 @@ class Board(object):
         pos = Position(*pos)
         npos = Position(*npos)
 
+        # Check square contains piece of right color
         piece = self.get(pos)
         if piece is None:
             raise InvalidMove("No piece on that position")
         elif piece.color is not self._playing_color:
             raise InvalidMove("You must move piece of your color")
 
+        # Check future
+        # ---- boundaries
         if npos.x < 0 or npos.x > 7 or npos.y < 0 or npos.y > 7:
             raise InvalidMove("Moving piece out of boundaries")
 
+        # ---- Move is possible
         move = piece.get_move(npos - pos)
 
-        # Make sure you don't bumb into someone when moving:
+        # ---- Squares along the path
         int_pos = pos.copy()
         for step in range(move.steps-1):
             int_pos = int_pos + move
             if self.get(int_pos):
                 raise InvalidMove("Bump into someone at %s" % int_pos)
-        # Check future
+
+        # ---- Destination
         npiece = self.get(npos)
         if npiece:
             if npiece.color is self._playing_color:

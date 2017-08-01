@@ -1,5 +1,5 @@
 from .piece import Piece
-from .move import Move
+from gameplay.move import Move
 
 
 class Rook(Piece):
