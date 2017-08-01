@@ -49,6 +49,20 @@ class Move(object):
 
     # Action
 
+    def do(self, board):
+        """Move piece with no checking."""
+        # Kill future if exists
+        cpos = self.get_origin()
+        npos = self.get_destination()
+        npiece = board.get(npos)
+        if npiece:
+            npiece.kill()
+
+        # Move piece
+        self.piece.move(npos)
+        board.set(cpos, None)
+        board.set(npos, self.piece)
+
     def check(self, board):
         """Check whether move is possible."""
         cpos = self.get_origin()        # Current position

@@ -133,22 +133,7 @@ class Board(object):
         # Check whether move is possible
         move = piece.get_move(npos - pos)
         move.check(self)
-
-        self._move(pos, npos, piece)
-
-    def _move(self, pos, npos, piece):
-        """Move piece with no checking."""
-        # Kill future if exists
-        npiece = self.get(npos)
-        if npiece:
-            npiece.kill()
-
-        # Move piece
-        piece.move(npos)
-        self.set(pos, None)
-        self.set(npos, piece)
-
-        # New PLayer
+        move.do(self)
         self._playing_color = BLACK if self._playing_color is WHITE else WHITE
 
     # ----------------------------------------------------------------------- #
