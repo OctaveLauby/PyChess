@@ -61,6 +61,7 @@ class Board(object):
 
         self._pieces = None
         self._playing_color = None
+        self._batch_actions = []
         self.init()
 
     def _add_piece(self, piece):
@@ -114,6 +115,8 @@ class Board(object):
     def set(self, position, piece):
         """Set piece at position."""
         self._board[position.x][position.y] = piece
+        if piece is not None:
+            piece.set(position)
 
     # ----------------------------------------------------------------------- #
     # Playing
@@ -135,6 +138,26 @@ class Board(object):
         move.check(self)
         move.do(self)
         self._playing_color = BLACK if self._playing_color is WHITE else WHITE
+
+    # ----------------------------------------------------------------------- #
+    # Reversible actions
+
+    def _rev_kill(self, piece):
+        position = piece.pos.copy()
+        piece.kill()
+        return {'piece': piece, 'position': position}
+
+    def _rev_kill_undo(self, piece, position):
+        self.set(position, piece)
+        piece.unkill()
+
+    def _rev_move(self, piece, dest_pos):
+        or_pos = piece.pos.copy()
+        self.set(dest_pos, piece)
+        return {'piece': piece, 'origin': or_pos, 'destination': dest_pos}
+
+    def _rev_move_undo(self, piece, or_pos, dest_pos):
+        self.set(or_pos, piece)
 
     # ----------------------------------------------------------------------- #
     # Display

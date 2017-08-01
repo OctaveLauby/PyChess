@@ -59,7 +59,6 @@ class Move(object):
             npiece.kill()
 
         # Move piece
-        self.piece.move(npos)
         board.set(cpos, None)
         board.set(npos, self.piece)
 

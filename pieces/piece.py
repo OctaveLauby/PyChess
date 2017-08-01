@@ -42,6 +42,13 @@ class Piece(object):
     def y(self):
         return self.pos.y
 
+    def set(self, npos):
+        """Go not next position."""
+        self._has_moved = True
+        self._pos = Position(npos)
+
+    # Utils
+
     def is_alife(self):
         """Whether piece is still active."""
         return self._alife
@@ -69,13 +76,11 @@ class Piece(object):
     def kill(self):
         self._alife = False
 
-    def move(self, npos):
-        """Go not next position."""
-        self._has_moved = True
-        self._pos = Position(npos)
-
     def symbol(self):
         return "?"
+
+    def unkill(self):
+        self._alife = True
 
     def __repr__(self):
         ind = "?"
