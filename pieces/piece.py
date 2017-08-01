@@ -1,5 +1,5 @@
 from parameters import BLACK, WHITE, TOP_COLOR
-from utils.vector import Vector
+from utils import Position, Vector
 
 
 class InvalidMove(Exception):
@@ -14,18 +14,16 @@ class Piece(object):
         self._direction = (
             Vector(1, 1) if self._color is TOP_COLOR else Vector(-1, 1)
         )
-        self._pos = Vector(x, y)
+
+        self._pos = Position(x, y)
+        self._or_pos = Position(x, y)
+        self._has_moved = False
 
         self._moves = None
-        self._can_cross = False
         self.init_moves()
 
     def init_moves(self):
         raise NotImplementedError
-
-    @property
-    def alife(self):
-        return self._alife
 
     @property
     def color(self):
@@ -47,19 +45,14 @@ class Piece(object):
     def y(self):
         return self.pos.y
 
-    @pos.setter
-    def pos(self, npos):
-        """Go not next position."""
-        self._pos = Vector(npos[0], npos[1])
+    def is_alife(self):
+        return self._alife
 
     def color_name(self):
         if self.color is BLACK:
             return "black"
         elif self.color is WHITE:
             return "white"
-
-    def kill(self):
-        self._alife = False
 
     def get_move(self, move_tuple):
         for move in self._moves:
@@ -69,6 +62,17 @@ class Piece(object):
             "%s %s can't do %s move."
             % (self.color_name(), self.__class__.__name__, move_tuple)
         )
+
+    def has_moved(self):
+        return self._has_moved
+
+    def kill(self):
+        self._alife = False
+
+    def move(self, npos):
+        """Go not next position."""
+        self._has_moved = True
+        self._pos = Position(npos)
 
     def symbol(self):
         return "?"
@@ -82,4 +86,4 @@ class Piece(object):
         return ind + self.symbol() + ind
 
     def __string__(self):
-        return "{} ({}, {})".format(self.symbol(), *self.pos)
+        return "{} {}".format(self.symbol(), self.pos)

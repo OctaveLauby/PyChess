@@ -1,5 +1,3 @@
-import itertools
-
 from parameters import BLACK, WHITE, TOP_COLOR
 from pieces import (
     InvalidMove,
@@ -10,7 +8,7 @@ from pieces import (
     Pawn,
     Rook,
 )
-from utils.vector import Vector
+from utils import Position
 
 
 BOARD_FORMAT = (
@@ -37,16 +35,14 @@ BOARD_FORMAT = (
     """
 )
 
-CELLS = list(itertools.product(range(8), range(8)))
-
 
 class PList(list):
 
-    def string(self):
+    def deads_str(self):
         return (
             "["
             + " ".join([
-                "-" if piece.alife else piece.symbol()
+                "-" if piece.is_alife() else piece.symbol()
                 for piece in self
             ])
             + "]"
@@ -63,80 +59,89 @@ class Board(object):
             for y in range(8):
                 self._board[x].append(None)
 
-        self._pieces = {
-            BLACK: PList([]),
-            WHITE: PList([]),
-        }
+        self._pieces = None
         self._playing_color = None
         self.init()
 
-    def add_piece(self, piece):
+    def _add_piece(self, piece):
         self._board[piece.x][piece.y] = piece
         self._pieces[piece.color].append(piece)
 
     def init(self):
+        """Initialize board pieces."""
+        self._pieces = {
+            BLACK: PList([]),
+            WHITE: PList([]),
+        }
         self._playing_color = WHITE
         for color in [BLACK, WHITE]:
             for pawn_n in range(8):
                 x = 1 if color is TOP_COLOR else 6
                 y = pawn_n
                 pawn = Pawn(x, y, color)
-                self.add_piece(pawn)
+                self._add_piece(pawn)
 
             lign = 0 if color is TOP_COLOR else 7
-            self.add_piece(Bishop(lign, 2, color))
-            self.add_piece(Bishop(lign, 5, color))
-            self.add_piece(Knight(lign, 1, color))
-            self.add_piece(Knight(lign, 6, color))
-            self.add_piece(Rook(lign, 0, color))
-            self.add_piece(Rook(lign, 7, color))
+            self._add_piece(Bishop(lign, 2, color))
+            self._add_piece(Bishop(lign, 5, color))
+            self._add_piece(Knight(lign, 1, color))
+            self._add_piece(Knight(lign, 6, color))
+            self._add_piece(Rook(lign, 0, color))
+            self._add_piece(Rook(lign, 7, color))
             if TOP_COLOR is BLACK:
-                self.add_piece(Queen(lign, 3, color))
-                self.add_piece(King(lign, 4, color))
+                self._add_piece(Queen(lign, 3, color))
+                self._add_piece(King(lign, 4, color))
             else:
-                self.add_piece(King(lign, 3, color))
-                self.add_piece(Queen(lign, 4, color))
+                self._add_piece(King(lign, 3, color))
+                self._add_piece(Queen(lign, 4, color))
 
     # ----------------------------------------------------------------------- #
-    # Properties
+    # Properties & g/s-etters
 
     @property
     def player(self):
+        """Return current player color."""
         if self._playing_color is BLACK:
             return "Black"
         elif self._playing_color is WHITE:
             return "White"
         return None
 
+    def get(self, position):
+        """Return piece at position."""
+        return self._board[position.x][position.y]
+
+    def set(self, position, piece):
+        """Set piece at position."""
+        self._board[position.x][position.y] = piece
+
     # ----------------------------------------------------------------------- #
     # Playing
 
     def move(self, pos, npos):
-        pos = Vector(*pos)
-        npos = Vector(*npos)
-        x, y = pos
-        nx, ny = npos
+        """Move piece at pos to npos if possible."""
+        pos = Position(*pos)
+        npos = Position(*npos)
 
-        piece = self._board[x][y]
+        piece = self.get(pos)
         if piece is None:
             raise InvalidMove("No piece on that position")
         elif piece.color is not self._playing_color:
             raise InvalidMove("You must move piece of your color")
 
-        if nx < 0 or nx > 7 or ny < 0 or ny > 7:
+        if npos.x < 0 or npos.x > 7 or npos.y < 0 or npos.y > 7:
             raise InvalidMove("Moving piece out of boundaries")
 
-        move = piece.get_move(npos-pos)
+        move = piece.get_move(npos - pos)
 
         # Make sure you don't bumb into someone when moving:
         int_pos = pos.copy()
         for step in range(move.steps-1):
             int_pos = int_pos + move
-            ix, iy = int_pos.x, int_pos.y
-            if self._board[ix][iy]:
-                raise InvalidMove("Bump into someone at (%s, %s)" % (ix, iy))
+            if self.get(int_pos):
+                raise InvalidMove("Bump into someone at %s" % int_pos)
         # Check future
-        npiece = self._board[nx][ny]
+        npiece = self.get(npos)
         if npiece:
             if npiece.color is self._playing_color:
                 raise InvalidMove("Moving on a piece of your own")
@@ -145,23 +150,30 @@ class Board(object):
         elif move.must_kill:
             raise InvalidMove("This move is valid only if it kills a piece")
 
-        self._move(x, y, nx, ny, piece)
+        self._move(pos, npos, piece)
 
-    def _move(self, x, y, nx, ny, piece):
-        self._board[x][y] = None
-        npiece = self._board[nx][ny]
+    def _move(self, pos, npos, piece):
+        """Move piece with no checking."""
+        # Kill future if exists
+        npiece = self.get(npos)
         if npiece:
             npiece.kill()
-        piece.pos = (nx, ny)
-        self._board[nx][ny] = piece
+
+        # Move piece
+        piece.move(npos)
+        self.set(pos, None)
+        self.set(npos, piece)
+
+        # New PLayer
         self._playing_color = BLACK if self._playing_color is WHITE else WHITE
 
     # ----------------------------------------------------------------------- #
     # Display
 
     def board_str(self):
+        """Return board representation."""
         board = BOARD_FORMAT
-        for x, y in CELLS:
+        for x, y in Position.iter(8, 8):
             piece = self._board[x][y]
             r = " - " if (x + y) % 2 else "   "
             board = board.replace(
@@ -171,6 +183,7 @@ class Board(object):
         return board
 
     def display(self):
+        """Display board and killed pieces."""
         if TOP_COLOR is BLACK:
             top_color = "Black"
             bottom_color = "White"
@@ -179,6 +192,6 @@ class Board(object):
             bottom_color = "Black"
 
         print()
-        print(top_color, ":", self._pieces[TOP_COLOR].string())
+        print(top_color, ":", self._pieces[TOP_COLOR].deads_str())
         print(self.board_str())
-        print(bottom_color, ":", self._pieces[1 - TOP_COLOR].string())
+        print(bottom_color, ":", self._pieces[1 - TOP_COLOR].deads_str())
