@@ -34,9 +34,6 @@ class XYItem(object):
     def __add__(self, other):
         return self.__class__(self.x + other.x, self.y + other.y)
 
-    def __radd__(self, other):
-        return self + other
-
     def __eq__(self, other):
         if isinstance(other, XYItem):
             return self.t == other.t
