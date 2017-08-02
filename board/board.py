@@ -49,6 +49,10 @@ class PList(list):
         )
 
 
+class BoardError(Exception):
+    pass
+
+
 class Board(object):
 
     def __init__(self):
@@ -61,10 +65,11 @@ class Board(object):
 
         self._pieces = None
         self._playing_color = None
-        self._batch_actions = []
+        self._action_batchs = []
         self.init()
 
     def _add_piece(self, piece):
+        """Add piece to board, no question asked."""
         self._board[piece.x][piece.y] = piece
         self._pieces[piece.color].append(piece)
 
@@ -108,15 +113,28 @@ class Board(object):
             return "White"
         return None
 
+    def change_player(self):
+        """Change player"""
+        self._playing_color = BLACK if self._playing_color is WHITE else WHITE
+
     def get(self, position):
         """Return piece at position."""
         return self._board[position.x][position.y]
 
-    def set(self, position, piece):
-        """Set piece at position."""
+    def _move_piece(self, position, piece):
+        """Move piece on position (does not set piece position).
+
+        Returns:
+            (Piece): overwritten piece
+        """
+        cpiece = self._board[position.x][position.y]
+        if cpiece and cpiece.is_alife():
+            raise BoardError(
+                "Can't move piece on square containing an active piece"
+            )
+        self._board[piece.x][piece.y] = None
         self._board[position.x][position.y] = piece
-        if piece is not None:
-            piece.set(position)
+        return cpiece
 
     # ----------------------------------------------------------------------- #
     # Playing
@@ -136,28 +154,61 @@ class Board(object):
         # Check whether move is possible
         move = piece.get_move(npos - pos)
         move.check(self)
-        move.do(self)
-        self._playing_color = BLACK if self._playing_color is WHITE else WHITE
+        action_batch = move.create_batch(self)
+        self._apply(action_batch)
+        self.change_player()
 
     # ----------------------------------------------------------------------- #
     # Reversible actions
 
-    def _rev_kill(self, piece):
-        position = piece.pos.copy()
-        piece.kill()
-        return {'piece': piece, 'position': position}
+    def _apply(self, action_batch):
+        """Apply an action batch.
 
-    def _rev_kill_undo(self, piece, position):
-        self.set(position, piece)
+        Args:
+            action_batch (gameplay.action.ActionBatch): actions to apply
+        """
+        action_batch.apply(self)
+        self._action_batchs.append(action_batch)
+
+    def _unapply(self):
+        """Unapply last action batch."""
+        action_batch = self._action_batchs.pop()
+        action_batch.unapply(self)
+
+    def undo(self):
+        """Undo last action batch."""
+        self._unapply()
+        self.change_player()
+
+    def _rev_kill(self, piece):
+        """Reversible kill."""
+        piece.kill()
+        return {'piece': piece}
+
+    def _undo_kill(self, piece):
+        """Undo kill."""
         piece.unkill()
 
-    def _rev_move(self, piece, dest_pos):
+    def _rev_move(self, piece, destination):
+        """Reversible move."""
+        if not piece.is_alife():
+            raise BoardError("Can't move an unactive piece")
         or_pos = piece.pos.copy()
-        self.set(dest_pos, piece)
-        return {'piece': piece, 'origin': or_pos, 'destination': dest_pos}
+        opiece = self._move_piece(destination, piece)  # former piece
+        piece.set(destination)
+        return {
+            'origin': or_pos,
+            'dest': destination,
+            'piece': piece,
+            'opiece': opiece
+        }
 
-    def _rev_move_undo(self, piece, or_pos, dest_pos):
-        self.set(or_pos, piece)
+    def _undo_move(self, origin, dest, piece, opiece):
+        """Undo move."""
+        self._move_piece(origin, piece)
+        if opiece:
+            self._move_piece(dest, opiece)
+        piece.unset(origin)
 
     # ----------------------------------------------------------------------- #
     # Display
@@ -170,7 +221,7 @@ class Board(object):
             r = " - " if (x + y) % 2 else "   "
             board = board.replace(
                 "%s %s" % (x, y),
-                repr(piece) if piece else r
+                piece.repr() if piece else r
             )
         return board
 

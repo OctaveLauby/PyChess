@@ -1,6 +1,7 @@
-from .piece import Piece
 from gameplay.moves import CaptureMove, FirstMove, PeaceMove
 from utils import Vector
+
+from .piece import Piece
 
 
 class Pawn(Piece):

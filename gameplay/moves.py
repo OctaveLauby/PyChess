@@ -1,5 +1,6 @@
 from utils import Vector
 
+from .action import Action, ActionBatch
 from .errors import InvalidMove
 
 
@@ -49,18 +50,23 @@ class Move(object):
 
     # Action
 
-    def do(self, board):
+    def create_batch(self, board):
         """Move piece with no checking."""
+        batch = ActionBatch()
+
         # Kill future if exists
-        cpos = self.get_origin()
         npos = self.get_destination()
         npiece = board.get(npos)
         if npiece:
-            npiece.kill()
+            batch.append(
+                Action("kill", piece=npiece)
+            )
 
         # Move piece
-        board.set(cpos, None)
-        board.set(npos, self.piece)
+        batch.append(
+            Action("move", piece=self.piece, destination=npos)
+        )
+        return batch
 
     def check(self, board):
         """Check whether move is possible."""
@@ -147,19 +153,21 @@ class Castling(Move):
     def dist_to_corner(self):
         return self._dist_to_corner
 
-    def do(self, board):
-        cpos = self.get_origin()
+    def create_batch(self, board):
+        batch = ActionBatch()
         npos = self.get_destination()
 
         # Move king
-        board.set(cpos, None)
-        board.set(npos, self.piece)
+        batch.append(
+            Action("move", piece=self.piece, destination=npos)
+        )
 
         # Move rook
         rook = board.get(self.corner)
-        board.set(self.corner, None)
-        print(npos - self.direction, rook, npos, self.direction)
-        board.set(npos - self.direction, rook)
+        batch.append(
+            Action("move", piece=rook, destination=npos - self.direction)
+        )
+        return batch
 
     def check(self, board):
         if self.piece.has_moved():

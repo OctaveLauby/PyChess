@@ -69,7 +69,12 @@ if __name__ == '__main__':
         "f1 h3",
     ]
     for move in old_start:
-        play_move(move, board, f)
+        try:
+            play_move(move, board, f)
+        except InvalidMove as e:
+            board.display()
+            print(move)
+            raise e
 
     cont = True
     while cont:
@@ -79,7 +84,10 @@ if __name__ == '__main__':
             move = input("\tMove:")
             if move in ["q", "quit", "s", "stop"]:
                 raise GameOver
-            play_move(move, board, f)
+            elif move in ["undo", "cancel"]:
+                board.undo()
+            else:
+                play_move(move, board, f)
         except InvalidMove as e:
             print("/!\ InvalidMove :", e)
         except GameOver:

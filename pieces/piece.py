@@ -5,6 +5,12 @@ from utils import Position, Vector
 
 class Piece(object):
 
+    pieces = {
+        BLACK: [],
+        WHITE: []
+    }
+    count = 0
+
     def __init__(self, x, y, color):
         self._alife = True
         self._color = color
@@ -14,10 +20,14 @@ class Piece(object):
 
         self._pos = Position(x, y)
         self._or_pos = Position(x, y)
-        self._has_moved = False
+        self._moves_n = 0
 
         self._moves = None
         self.init_moves()
+
+        Piece.count += 1
+        self._id = Piece.count
+        Piece.pieces[color].append(self)
 
     def init_moves(self):
         raise NotImplementedError
@@ -48,8 +58,12 @@ class Piece(object):
 
     def set(self, npos):
         """Go not next position."""
-        self._has_moved = True
+        self._moves_n += 1
         self._pos = Position(npos)
+
+    def unset(self, opos):
+        self._moves_n -= 1
+        self._pos = Position(opos)
 
     # Utils
 
@@ -75,7 +89,7 @@ class Piece(object):
         )
 
     def has_moved(self):
-        return self._has_moved
+        return self._moves_n > 0
 
     def kill(self):
         self._alife = False
@@ -86,7 +100,7 @@ class Piece(object):
     def unkill(self):
         self._alife = True
 
-    def __repr__(self):
+    def repr(self):
         ind = "?"
         if self.color is WHITE:
             ind = "w"
@@ -94,5 +108,12 @@ class Piece(object):
             ind = "b"
         return ind + self.symbol() + ind
 
-    def __string__(self):
-        return "{} {}".format(self.symbol(), self.pos)
+    def __repr__(self):
+        return "<{} {} {}>".format(
+            self.color_name(),
+            self.__class__.__name__,
+            self.pos,
+        )
+
+    def __str__(self):
+        return self.__repr__()
