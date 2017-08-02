@@ -52,7 +52,7 @@ class XYItem(object):
         return self.__class__.__name__ + str(self)
 
     def __sub__(self, other):
-        return self.__class__(self.x - other.y, self.y - other.y)
+        return self.__class__(self.x - other.x, self.y - other.y)
 
     def __str__(self):
         return str(self.t)
