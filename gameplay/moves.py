@@ -73,9 +73,7 @@ class Move(object):
             raise InvalidMove("Moving piece out of boundaries")
 
         # ---- Watch out for pieces along the way
-        int_pos = cpos.copy()
-        for step in range(self.steps-1):
-            int_pos = int_pos + self.direction
+        for int_pos in self.direction.iter(cpos, self.steps-1):
             if board.get(int_pos):
                 raise InvalidMove("Bump into someone at %s" % int_pos)
 
