@@ -35,6 +35,10 @@ class Piece(object):
         return self._pos
 
     @property
+    def origin(self):
+        return self._or_pos
+
+    @property
     def x(self):
         return self.pos.x
 

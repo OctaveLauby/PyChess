@@ -40,8 +40,8 @@ def read_input(message):
 
 def play_move(move, board, f):
     pos, npos = read_input(move)
-    f.write(move+"\n")
     board.move(pos, npos)
+    f.write(move+"\n")
 
 
 if __name__ == '__main__':
@@ -64,6 +64,9 @@ if __name__ == '__main__':
         "d8 a5",
         "g1 f3",
         "a5 c3",
+        "g2 g4",
+        "c8 a6",
+        "f1 h3",
     ]
     for move in old_start:
         play_move(move, board, f)

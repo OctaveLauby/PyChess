@@ -120,3 +120,85 @@ class FirstMove(PeaceMove):
         if self.piece.has_moved():
             raise InvalidMove("Forbidden when piece has moved already")
         super().check(board)
+
+
+class Castling(Move):
+    """Castling."""
+
+    def __init__(self, piece, direction):
+        assert piece.__class__.__name__ == "King"
+        super().__init__(
+            piece,
+            direction=direction,
+            steps=2,
+        )
+        self._corner = piece.origin
+        self._dist_to_corner = 0
+        while 0 < self._corner.y < 7:
+            self._dist_to_corner += 1
+            self._corner = self._corner + self.direction
+
+    @property
+    def corner(self):
+        """Corner where a rook is expected."""
+        return self._corner
+
+    @property
+    def dist_to_corner(self):
+        return self._dist_to_corner
+
+    def do(self, board):
+        cpos = self.get_origin()
+        npos = self.get_destination()
+
+        # Move king
+        board.set(cpos, None)
+        board.set(npos, self.piece)
+
+        # Move rook
+        rook = board.get(self.corner)
+        board.set(self.corner, None)
+        print(npos - self.direction, rook, npos, self.direction)
+        board.set(npos - self.direction, rook)
+
+    def check(self, board):
+        if self.piece.has_moved():
+            raise InvalidMove("Can't castle when King has moved")
+        super().check(board)
+
+    def check_destination(self, npos, board):
+        return True
+
+    def check_path(self, cpos, board):
+        for int_pos in self.direction.iter(cpos, self.dist_to_corner - 1):
+            if board.get(int_pos):
+                raise InvalidMove("Can't castle when a piece is along the way")
+        corner_piece = board.get(self.corner)
+        if (
+            corner_piece is None
+            or corner_piece.__class__.__name__ is not "Rook"
+        ):
+            raise InvalidMove("Castling must evolve a rook")
+        if corner_piece.has_moved():
+            raise InvalidMove("Can't castle with a rook that has moved")
+        return True
+
+
+class LCastling(Castling):
+    """Castling on the left."""
+
+    def __init__(self, piece):
+        super().__init__(
+            piece,
+            direction=(0, -1),
+        )
+
+
+class RCastling(Castling):
+    """Castling on the right."""
+
+    def __init__(self, piece):
+        super().__init__(
+            piece,
+            direction=(0, 1),
+        )
