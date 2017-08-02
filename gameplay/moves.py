@@ -66,25 +66,28 @@ class Move(object):
         """Check whether move is possible."""
         cpos = self.get_origin()        # Current position
         npos = self.get_destination()   # Next position
-
-        # Check future
-        # ---- boundaries
-        if npos.x < 0 or npos.x > 7 or npos.y < 0 or npos.y > 7:
-            raise InvalidMove("Moving piece out of boundaries")
-
-        # ---- Watch out for pieces along the way
-        for int_pos in self.direction.iter(cpos, self.steps-1):
-            if board.get(int_pos):
-                raise InvalidMove("Bump into someone at %s" % int_pos)
-
+        self.check_boundaries(npos, board)
+        self.check_path(cpos, board)
         self.check_destination(npos, board)
         return True
+
+    def check_boundaries(self, npos, board):
+        """Check whether destination is within board."""
+        if npos.x < 0 or npos.x > 7 or npos.y < 0 or npos.y > 7:
+            raise InvalidMove("Moving piece out of boundaries")
 
     def check_destination(self, npos, board):
         """Check whether destination is accessible."""
         npiece = board.get(npos)
         if npiece and npiece.color is self.piece.color:
             raise InvalidMove("Moving on a piece of same color")
+        return True
+
+    def check_path(self, cpos, board):
+        """Watch out for pieces along the ways."""
+        for int_pos in self.direction.iter(cpos, self.steps-1):
+            if board.get(int_pos):
+                raise InvalidMove("Bump into someone at %s" % int_pos)
         return True
 
 
